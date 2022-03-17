@@ -53,6 +53,8 @@ namespace Tuldok.Bowling.Service
 
         public async Task<List<Game>> GetAllGames() => await _gameService.GetGames();
 
+        public async Task DeleteGame(Guid gameId) => await _gameService.DeleteGame(gameId);
+
         public async Task<Frame> CreateFrame(Guid gameId, int? frameNumber = null)
         {
             var game = await GetGame(gameId);
@@ -92,6 +94,10 @@ namespace Tuldok.Bowling.Service
         }
 
         public async Task<List<Frame>> GetAllFrames(Guid gameId) => await _frameService.GetFrames(gameId);
+
+        public async Task<Frame> GetFrame(Guid frameId) => await _frameService.GetFrame(frameId);
+
+        public async Task DeleteFrame(Guid frameId) => await _frameService.DeleteFrame(frameId);
         
         public async Task<Shot> CreateShot(Guid frameId, int pinFalls, int? shotNumber = null)
         {
@@ -193,7 +199,11 @@ namespace Tuldok.Bowling.Service
             }
         }
 
-        private int GetNextSequence(IEnumerable<int> numbers, int max)
+        public async Task<List<Shot>> GetAllShots(Guid frameId) => await _shotService.GetShots(frameId);
+        public async Task<Shot> GetShot(Guid shotId) => await _shotService.GetShot(shotId);
+        public async Task DeleteShot(Guid shotId) => await _shotService.DeleteShot(shotId);
+
+        private static int GetNextSequence(IEnumerable<int> numbers, int max)
         {
             var range = new HashSet<int>(Enumerable.Range(1, max));
             range.ExceptWith(numbers);
