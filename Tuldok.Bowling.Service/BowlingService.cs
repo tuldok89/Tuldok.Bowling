@@ -39,6 +39,20 @@ namespace Tuldok.Bowling.Service
             return game;
         }
 
+        public async Task UpdateGame(Game game)
+        {
+            var gameToUpdate = await GetGame(game.Id);
+
+            gameToUpdate.Name = game.Name;
+
+            var rows = await _gameService.UpdateGame(gameToUpdate);
+
+            if (rows == 0)
+            {
+                throw new EntityNotUpdatedException(nameof(Game));
+            }
+        }
+
         public async Task<Game> GetGame(Guid id)
         {
             var game = await _gameService.GetGame(id);
@@ -72,7 +86,7 @@ namespace Tuldok.Bowling.Service
 
             if (frameNumber == null)
             {
-                var currentSequence = game.Frames.Select(x => x.FrameNumber);
+                var currentSequence = game.Frames.Select(x => x.SequenceNumber);
                 frameNumber = GetNextSequence(currentSequence, 10);
             }
 
@@ -80,7 +94,7 @@ namespace Tuldok.Bowling.Service
             {
                 Id = Guid.NewGuid(),
                 Game = game,
-                FrameNumber = frameNumber.Value
+                SequenceNumber = frameNumber.Value
             };
 
             var rows = await _frameService.InsertFrame(frame);
@@ -93,55 +107,80 @@ namespace Tuldok.Bowling.Service
             return frame;
         }
 
+        public async Task UpdateFrame(Frame frame)
+        {
+            var frameToUpdate = await GetFrame(frame.Id);
+
+            // check for duplicate frame number
+            if (frameToUpdate.SequenceNumber != frame.SequenceNumber)
+            {
+                if (await _frameService.HasDuplicateSequence(frameToUpdate.GameId, frameToUpdate.Id, frame.SequenceNumber))
+                {
+                    throw new DuplicateSequenceException(nameof(Frame));
+                }
+            }
+
+            frameToUpdate.SequenceNumber = frame.SequenceNumber;
+
+            var rows = await _frameService.UpdateFrame(frameToUpdate);
+
+            if (rows == 0)
+            {
+                throw new EntityNotUpdatedException(nameof(Frame));
+            }
+        }
+
         public async Task<List<Frame>> GetAllFrames(Guid gameId) => await _frameService.GetFrames(gameId);
 
         public async Task<Frame> GetFrame(Guid frameId) => await _frameService.GetFrame(frameId);
 
         public async Task DeleteFrame(Guid frameId) => await _frameService.DeleteFrame(frameId);
         
-        public async Task<Shot> CreateShot(Guid frameId, int pinFalls, int? shotNumber = null)
+        public async Task<Shot> CreateShot(Guid frameId, int pinFalls, int? sequenceNumber = null)
         {
             if (!(pinFalls > 0 && pinFalls <= 10))
             {
-                throw new ArgumentOutOfRangeException(nameof(shotNumber));
+                throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
             }
 
             var frame = await _frameService.GetFrame(frameId);
 
             frame.Shots = await _shotService.GetShots(frameId);
 
-            if (frame.FrameNumber < 10)
+            if (frame.SequenceNumber < 10)
             {
-                if (frame.Shots.Count() == 2)
-                {
-                    throw new EntityCountExceededException(nameof(Shot), 2);
-                }
+                //if (frame.Shots.Count() == 2)
+                //{
+                //    throw new EntityCountExceededException(nameof(Shot), 2);
+                //}
 
-                if (!(shotNumber > 0 && shotNumber <= 2))
-                {
-                    throw new ArgumentOutOfRangeException(nameof(shotNumber));
-                }
+                //if (!(shotNumber > 0 && shotNumber <= 2))
+                //{
+                //    throw new ArgumentOutOfRangeException(nameof(shotNumber));
+                //}
 
-                if (shotNumber == null)
-                {
-                    var currentSequence = frame.Shots.Select(x => x.ShotNumber);
-                    shotNumber = GetNextSequence(currentSequence, 2);
-                }
+                //if (shotNumber == null)
+                //{
+                //    var currentSequence = frame.Shots.Select(x => x.SequenceNumber);
+                //    shotNumber = GetNextSequence(currentSequence, 2);
+                //}
 
-                var currentPinfalls = frame.Shots.Sum(x => x.FallenPins);
-                if (currentPinfalls + pinFalls > 10)
-                {
-                    var remainingPins = 10 - currentPinfalls;
+                //var currentPinfalls = frame.Shots.Sum(x => x.FallenPins);
+                //if (currentPinfalls + pinFalls > 10)
+                //{
+                //    var remainingPins = 10 - currentPinfalls;
 
-                    throw new PinFallsExceededException(remainingPins);
-                }
+                //    throw new PinFallsExceededException(remainingPins);
+                //}
+
+                CheckShot(frame, pinFalls, ref sequenceNumber);
 
                 var shot = new Shot
                 {
                     Id = Guid.NewGuid(),
                     FallenPins = pinFalls,
                     Frame = frame,
-                    ShotNumber = shotNumber.Value
+                    SequenceNumber = sequenceNumber.Value
                 };
 
                 var rows = await _shotService.InsertShot(shot);
@@ -155,37 +194,39 @@ namespace Tuldok.Bowling.Service
             }
             else // 10th frame
             {
-                if (!(shotNumber > 0 && shotNumber <= 3))
-                {
-                    throw new ArgumentOutOfRangeException(nameof(shotNumber));
-                }
-                
-                if (shotNumber == null)
-                {
-                    var currentSequence = frame.Shots.Select(x => x.ShotNumber);
-                    shotNumber = GetNextSequence(currentSequence, 3);
-                }
+                //if (!(sequenceNumber > 0 && sequenceNumber <= 3))
+                //{
+                //    throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
+                //}
 
-                if (shotNumber == 3 && (frame.Shots?.First().FallenPins != 10 || frame.Shots?.Sum(x => x.FallenPins) != 10))
-                {
-                    throw new EntityCountExceededException(nameof(Shot), 2);
-                }
+                //if (sequenceNumber == null)
+                //{
+                //    var currentSequence = frame.Shots.Select(x => x.SequenceNumber);
+                //    sequenceNumber = GetNextSequence(currentSequence, 3);
+                //}
 
-                var fallenPins1 = frame.Shots?.First().FallenPins;
+                //if (sequenceNumber == 3 && (frame.Shots?.First().FallenPins != 10 || frame.Shots?.Sum(x => x.FallenPins) != 10))
+                //{
+                //    throw new EntityCountExceededException(nameof(Shot), 2);
+                //}
 
-                if (shotNumber == 2 && (fallenPins1 != 10 && (fallenPins1 + pinFalls > 10)))
-                {
-                    fallenPins1 ??= 0;
-                    var remainingPins = 10 - fallenPins1;
-                    throw new PinFallsExceededException(remainingPins.Value);
-                }
+                //var fallenPins1 = frame.Shots?.First().FallenPins;
+
+                //if (sequenceNumber == 2 && (fallenPins1 != 10 && (fallenPins1 + pinFalls > 10)))
+                //{
+                //    fallenPins1 ??= 0;
+                //    var remainingPins = 10 - fallenPins1;
+                //    throw new PinFallsExceededException(remainingPins.Value);
+                //}
+
+                CheckShotFrame10(frame, pinFalls, ref sequenceNumber);
 
                 var shot = new Shot
                 {
                     FallenPins = pinFalls,
                     Frame = frame,
                     Id = Guid.NewGuid(),
-                    ShotNumber = shotNumber.Value
+                    SequenceNumber = sequenceNumber.Value
                 };
 
                 var rows = await _shotService.InsertShot(shot);
@@ -196,6 +237,61 @@ namespace Tuldok.Bowling.Service
                 }
 
                 return shot;
+            }
+        }
+
+        private void CheckShot(Frame frame, int pinFalls, ref int? sequenceNumber)
+        {
+            if (frame.Shots.Count() == 2)
+            {
+                throw new EntityCountExceededException(nameof(Shot), 2);
+            }
+
+            if (!(sequenceNumber > 0 && sequenceNumber <= 2))
+            {
+                throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
+            }
+
+            if (sequenceNumber == null)
+            {
+                var currentSequence = frame.Shots.Select(x => x.SequenceNumber);
+                sequenceNumber = GetNextSequence(currentSequence, 2);
+            }
+
+            var currentPinfalls = frame.Shots.Sum(x => x.FallenPins);
+            if (currentPinfalls + pinFalls > 10)
+            {
+                var remainingPins = 10 - currentPinfalls;
+
+                throw new PinFallsExceededException(remainingPins);
+            }
+        }
+
+        private void CheckShotFrame10(Frame frame, int pinFalls, ref int? sequenceNumber)
+        {
+            if (!(sequenceNumber > 0 && sequenceNumber <= 3))
+            {
+                throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
+            }
+
+            if (sequenceNumber == null)
+            {
+                var currentSequence = frame.Shots.Select(x => x.SequenceNumber);
+                sequenceNumber = GetNextSequence(currentSequence, 3);
+            }
+
+            if (sequenceNumber == 3 && (frame.Shots?.First().FallenPins != 10 || frame.Shots?.Sum(x => x.FallenPins) != 10))
+            {
+                throw new EntityCountExceededException(nameof(Shot), 2);
+            }
+
+            var fallenPins1 = frame.Shots?.First().FallenPins;
+
+            if (sequenceNumber == 2 && (fallenPins1 != 10 && (fallenPins1 + pinFalls > 10)))
+            {
+                fallenPins1 ??= 0;
+                var remainingPins = 10 - fallenPins1;
+                throw new PinFallsExceededException(remainingPins.Value);
             }
         }
 
