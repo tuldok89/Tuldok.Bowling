@@ -97,6 +97,11 @@ namespace Tuldok.Bowling.Service
                 SequenceNumber = frameNumber.Value
             };
 
+            if (await _frameService.HasDuplicateSequence(game.Id, frame.Id, frameNumber.Value))
+            {
+                throw new DuplicateSequenceException(nameof(Frame));
+            }
+
             var rows = await _frameService.InsertFrame(frame);
 
             if (rows == 0)
@@ -149,29 +154,6 @@ namespace Tuldok.Bowling.Service
 
             if (frame.SequenceNumber < 10)
             {
-                //if (frame.Shots.Count() == 2)
-                //{
-                //    throw new EntityCountExceededException(nameof(Shot), 2);
-                //}
-
-                //if (!(shotNumber > 0 && shotNumber <= 2))
-                //{
-                //    throw new ArgumentOutOfRangeException(nameof(shotNumber));
-                //}
-
-                //if (shotNumber == null)
-                //{
-                //    var currentSequence = frame.Shots.Select(x => x.SequenceNumber);
-                //    shotNumber = GetNextSequence(currentSequence, 2);
-                //}
-
-                //var currentPinfalls = frame.Shots.Sum(x => x.FallenPins);
-                //if (currentPinfalls + pinFalls > 10)
-                //{
-                //    var remainingPins = 10 - currentPinfalls;
-
-                //    throw new PinFallsExceededException(remainingPins);
-                //}
 
                 CheckShot(frame, pinFalls, ref sequenceNumber);
 
@@ -182,6 +164,11 @@ namespace Tuldok.Bowling.Service
                     Frame = frame,
                     SequenceNumber = sequenceNumber.Value
                 };
+
+                if (await _shotService.HasDuplicateSequence(frameId, shot.Id, shot.SequenceNumber))
+                {
+                    throw new DuplicateSequenceException(nameof(Shot));
+                }
 
                 var rows = await _shotService.InsertShot(shot);
 
@@ -194,31 +181,6 @@ namespace Tuldok.Bowling.Service
             }
             else // 10th frame
             {
-                //if (!(sequenceNumber > 0 && sequenceNumber <= 3))
-                //{
-                //    throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
-                //}
-
-                //if (sequenceNumber == null)
-                //{
-                //    var currentSequence = frame.Shots.Select(x => x.SequenceNumber);
-                //    sequenceNumber = GetNextSequence(currentSequence, 3);
-                //}
-
-                //if (sequenceNumber == 3 && (frame.Shots?.First().FallenPins != 10 || frame.Shots?.Sum(x => x.FallenPins) != 10))
-                //{
-                //    throw new EntityCountExceededException(nameof(Shot), 2);
-                //}
-
-                //var fallenPins1 = frame.Shots?.First().FallenPins;
-
-                //if (sequenceNumber == 2 && (fallenPins1 != 10 && (fallenPins1 + pinFalls > 10)))
-                //{
-                //    fallenPins1 ??= 0;
-                //    var remainingPins = 10 - fallenPins1;
-                //    throw new PinFallsExceededException(remainingPins.Value);
-                //}
-
                 CheckShotFrame10(frame, pinFalls, ref sequenceNumber);
 
                 var shot = new Shot
@@ -228,6 +190,11 @@ namespace Tuldok.Bowling.Service
                     Id = Guid.NewGuid(),
                     SequenceNumber = sequenceNumber.Value
                 };
+
+                if (await _shotService.HasDuplicateSequence(frameId, shot.Id, shot.SequenceNumber))
+                {
+                    throw new DuplicateSequenceException(nameof(Shot));
+                }
 
                 var rows = await _shotService.InsertShot(shot);
                 
