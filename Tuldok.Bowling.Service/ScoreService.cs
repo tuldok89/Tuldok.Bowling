@@ -25,7 +25,7 @@ namespace Tuldok.Bowling.Service
             var frames = (await _frameService.GetFrames(gameGuid));
             frames.Sort((x, y) =>
             {
-                return x.FrameNumber.CompareTo(y.FrameNumber);
+                return x.SequenceNumber.CompareTo(y.SequenceNumber);
             });
 
             for (int i = 0; i < frames.Count; i++)
@@ -100,7 +100,7 @@ namespace Tuldok.Bowling.Service
 
             shots.Sort((x, y) =>
             {
-                return x.ShotNumber.CompareTo(y.ShotNumber);
+                return x.SequenceNumber.CompareTo(y.SequenceNumber);
             });
 
             var pinfalls = shots.Sum(x => x.FallenPins);
@@ -117,7 +117,7 @@ namespace Tuldok.Bowling.Service
 
             shots.Sort((x, y) =>
             {
-                return x.ShotNumber.CompareTo(y.ShotNumber);
+                return x.SequenceNumber.CompareTo(y.SequenceNumber);
             });
 
             return shots;

@@ -34,7 +34,7 @@ namespace Tuldok.Bowling.Service
         {
             var frames = await _repository
                 .Query()
-                .Where(x => x.Game.Id == gameGuid)
+                .Where(x => x.GameId == gameGuid)
                 .ToListAsync();
 
             return frames;
@@ -55,6 +55,13 @@ namespace Tuldok.Bowling.Service
             var frameCount = await _repository.Query().Where(x => x.Game.Id == gameId).CountAsync();
 
             return frameCount;
+        }
+
+        public async Task<bool> HasDuplicateSequence(Guid gameId, Guid frameId, int sequenceNumber)
+        {
+            var hasDuplicate = await _repository.Query().AnyAsync(x => x.GameId == gameId && x.Id != frameId && x.SequenceNumber == sequenceNumber);
+
+            return hasDuplicate;
         }
     }
 }

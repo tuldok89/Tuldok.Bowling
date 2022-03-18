@@ -15,5 +15,6 @@ namespace Tuldok.Bowling.Service.Interfaces
         Task<int> UpdateShot(Shot shot);
         Task<int> DeleteShot(Guid id);
         Task<int> TotalShots(Guid frameId);
+        Task<bool> HasDuplicateSequence(Guid frameId, Guid shotId, int sequenceNumber);
     }
 }
