@@ -2,16 +2,24 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="6.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.7" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.7" />
     <PackageReference Include="coverlet.collector" Version="3.1.0" />
+    <PackageReference Include="MSTestExtensions" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tuldok.Bowling.Data\Tuldok.Bowling.Data.csproj" />
+    <ProjectReference Include="..\Tuldok.Bowling.Repo\Tuldok.Bowling.Repo.csproj" />
+    <ProjectReference Include="..\Tuldok.Bowling.Service\Tuldok.Bowling.Service.csproj" />
   </ItemGroup>
 
 </Project>
