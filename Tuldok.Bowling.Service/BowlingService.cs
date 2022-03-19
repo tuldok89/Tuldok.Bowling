@@ -9,22 +9,23 @@ using Tuldok.Bowling.Service.Interfaces;
 
 namespace Tuldok.Bowling.Service
 {
-    public class BowlingService
+    public class BowlingService : IBowlingService
     {
         private readonly IGameService _gameService;
         private readonly IFrameService _frameService;
         private readonly IShotService _shotService;
-        
+
         public BowlingService(IGameService gameService, IFrameService frameService, IShotService shotService)
         {
             _gameService = gameService;
             _frameService = frameService;
             _shotService = shotService;
         }
-        
+
         public async Task<Game> CreateGame(string name)
         {
-            var game = new Game {
+            var game = new Game
+            {
                 Id = Guid.NewGuid(),
                 Name = name
             };
@@ -79,15 +80,15 @@ namespace Tuldok.Bowling.Service
                 throw new EntityCountExceededException(nameof(Frame), 10);
             }
 
-            if (!(frameNumber > 0 && frameNumber <= 10))
-            {
-                throw new ArgumentOutOfRangeException(nameof(frameNumber));
-            }
-
             if (frameNumber == null)
             {
                 var currentSequence = game.Frames.Select(x => x.SequenceNumber);
                 frameNumber = GetNextSequence(currentSequence, 10);
+            }
+
+            if (!(frameNumber > 0 && frameNumber <= 10))
+            {
+                throw new ArgumentOutOfRangeException(nameof(frameNumber));
             }
 
             var frame = new Frame
@@ -140,10 +141,10 @@ namespace Tuldok.Bowling.Service
         public async Task<Frame> GetFrame(Guid frameId) => await _frameService.GetFrame(frameId);
 
         public async Task DeleteFrame(Guid frameId) => await _frameService.DeleteFrame(frameId);
-        
+
         public async Task<Shot> CreateShot(Guid frameId, int pinFalls, int? sequenceNumber = null)
         {
-            if (!(pinFalls > 0 && pinFalls <= 10))
+            if (!(pinFalls >= 0 && pinFalls <= 10))
             {
                 throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
             }
@@ -197,7 +198,7 @@ namespace Tuldok.Bowling.Service
                 }
 
                 var rows = await _shotService.InsertShot(shot);
-                
+
                 if (rows == 0)
                 {
                     throw new EntityNotCreatedException(nameof(Shot));
@@ -214,15 +215,15 @@ namespace Tuldok.Bowling.Service
                 throw new EntityCountExceededException(nameof(Shot), 2);
             }
 
-            if (!(sequenceNumber > 0 && sequenceNumber <= 2))
-            {
-                throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
-            }
-
             if (sequenceNumber == null)
             {
                 var currentSequence = frame.Shots.Select(x => x.SequenceNumber);
                 sequenceNumber = GetNextSequence(currentSequence, 2);
+            }
+
+            if (!(sequenceNumber > 0 && sequenceNumber <= 2))
+            {
+                throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
             }
 
             var currentPinfalls = frame.Shots.Sum(x => x.FallenPins);
@@ -236,9 +237,9 @@ namespace Tuldok.Bowling.Service
 
         private void CheckShotFrame10(Frame frame, int pinFalls, ref int? sequenceNumber)
         {
-            if (!(sequenceNumber > 0 && sequenceNumber <= 3))
+            if (frame.Shots.Count() == 3)
             {
-                throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
+                throw new EntityCountExceededException(nameof(Shot), 3);
             }
 
             if (sequenceNumber == null)
@@ -247,17 +248,25 @@ namespace Tuldok.Bowling.Service
                 sequenceNumber = GetNextSequence(currentSequence, 3);
             }
 
-            if (sequenceNumber == 3 && (frame.Shots?.First().FallenPins != 10 || frame.Shots?.Sum(x => x.FallenPins) != 10))
+            if (!(sequenceNumber > 0 && sequenceNumber <= 3))
+            {
+                throw new ArgumentOutOfRangeException(nameof(sequenceNumber));
+            }
+
+            var firstShotPins = frame.Shots?.FirstOrDefault()?.FallenPins;
+            var sumTwoShots = frame.Shots?.Sum(x => x.FallenPins);
+
+            // 1st shot isn't a strike, nor are the previous shots a spare
+            if (sequenceNumber == 3 && firstShotPins != 10 && sumTwoShots != 10)
             {
                 throw new EntityCountExceededException(nameof(Shot), 2);
             }
 
-            var fallenPins1 = frame.Shots?.First().FallenPins;
-
-            if (sequenceNumber == 2 && (fallenPins1 != 10 && (fallenPins1 + pinFalls > 10)))
+            // 2nd shot exceeds the total number of pins
+            if (sequenceNumber == 2 && firstShotPins != 10 && firstShotPins + pinFalls > 10)
             {
-                fallenPins1 ??= 0;
-                var remainingPins = 10 - fallenPins1;
+                firstShotPins ??= 0;
+                var remainingPins = 10 - firstShotPins;
                 throw new PinFallsExceededException(remainingPins.Value);
             }
         }

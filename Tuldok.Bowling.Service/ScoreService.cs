@@ -69,7 +69,7 @@ namespace Tuldok.Bowling.Service
                             totalScore += frameDetails1.Shots.First().FallenPins + frameDetails2.Shots.First().FallenPins;
                         }
                     }
-                    else // spare
+                    else if (frameDetails.IsSpare)
                     {
                         var plus1idx = i + 1;
 

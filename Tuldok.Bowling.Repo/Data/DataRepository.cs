@@ -8,7 +8,7 @@ using Tuldok.Bowling.Data.Entities;
 
 namespace Tuldok.Bowling.Repo.Data
 {
-    public abstract class DataRepository<T> : IRepository<T> where T : BaseEntity
+    public class DataRepository<T> : IRepository<T> where T : BaseEntity
     {
         private readonly DataContext _context;
         private readonly DbSet<T> entities;
