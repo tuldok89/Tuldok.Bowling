@@ -16,6 +16,7 @@ namespace Tuldok.Bowling.Repo.Data
         
         public DbSet<Game> Games { get; set; }
         public DbSet<Frame> Frames { get; set; }
+        public DbSet<Shot> Shots { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
