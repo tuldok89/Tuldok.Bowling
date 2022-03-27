@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Tuldok.Bowling.Data.Entities;
 using Tuldok.Bowling.Service.Interfaces;
@@ -32,7 +31,7 @@ namespace Tuldok.Bowling.Service
             {
                 var frame = frames[i];
 
-                if (i != 9)
+                if (i != 9) // 1st to 9th game
                 {
                     var frameDetails = await GetFrameDetails(frame.Id);
 

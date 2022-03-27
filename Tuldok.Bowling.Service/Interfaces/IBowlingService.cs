@@ -19,7 +19,9 @@ namespace Tuldok.Bowling.Service.Interfaces
         Task<Frame> GetFrame(Guid frameId);
         Task<Game> GetGame(Guid id);
         Task<Shot> GetShot(Guid shotId);
+        Task<Shot> GetShot(Guid frameId, int sequenceNumber);
         Task UpdateFrame(Frame frame);
         Task UpdateGame(Game game);
+        Task DeleteAllShots(Guid frameId);
     }
 }

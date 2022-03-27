@@ -138,9 +138,23 @@ namespace Tuldok.Bowling.Service
 
         public async Task<List<Frame>> GetAllFrames(Guid gameId) => await _frameService.GetFrames(gameId);
 
-        public async Task<Frame> GetFrame(Guid frameId) => await _frameService.GetFrame(frameId);
+        public async Task<Frame> GetFrame(Guid frameId)
+        {
+            var frame = await _frameService.GetFrame(frameId);
+            if (frame == null)
+            {
+                throw new EntityNotFoundException(nameof(Frame));
+            }
 
-        public async Task DeleteFrame(Guid frameId) => await _frameService.DeleteFrame(frameId);
+            return frame;
+        }
+
+        public async Task DeleteFrame(Guid frameId)
+        {
+            var frame = await GetFrame(frameId);
+
+            await _frameService.DeleteFrame(frame.Id);
+        }
 
         public async Task<Shot> CreateShot(Guid frameId, int pinFalls, int? sequenceNumber = null)
         {
@@ -281,6 +295,35 @@ namespace Tuldok.Bowling.Service
             range.ExceptWith(numbers);
 
             return range.Min();
+        }
+
+        public async Task<Shot> GetShot(Guid frameId, int sequenceNumber)
+        {
+            var shot = await _shotService.GetShot(frameId, sequenceNumber);
+
+            if (shot == null)
+            {
+                throw new EntityNotFoundException(nameof(Shot));
+            }
+
+            return shot;
+        }
+
+        public async Task DeleteAllShots(Guid frameId)
+        {
+            var frame = await _frameService.GetFrame(frameId);
+
+            if (frame == null)
+            {
+                throw new EntityNotFoundException(nameof(Frame));
+            }
+
+            var shots = await _shotService.GetShots(frame.Id);
+
+            foreach (var shot in shots)
+            {
+                await _shotService.DeleteShot(shot.Id);
+            }
         }
     }
 }

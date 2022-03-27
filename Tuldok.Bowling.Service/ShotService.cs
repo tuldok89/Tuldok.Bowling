@@ -62,5 +62,20 @@ namespace Tuldok.Bowling.Service
 
             return hasDuplicate;
         }
+
+        public async Task<Shot> GetShot(Guid frameId, int sequenceNumber)
+        {
+            return await _repository.Query().Where(x => x.FrameId == frameId && x.SequenceNumber == sequenceNumber).SingleOrDefaultAsync();
+        }
+
+        public async Task DeleteAllShots(Guid frameId)
+        {
+            var shots = await GetShots(frameId);
+
+            foreach (var shot in shots)
+            {
+                await _repository.Delete(shot);
+            }
+        }
     }
 }

@@ -43,9 +43,6 @@ namespace Tuldok.Bowling.Test
             ScoreService = new ScoreService(FrameService, ShotService);
         }
 
-        public void Dispose()
-        {
-            Context.Dispose();
-        }
+        public void Dispose() => Context.Dispose();
     }
 }
