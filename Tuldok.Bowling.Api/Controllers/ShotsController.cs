@@ -137,7 +137,14 @@ namespace Tuldok.Bowling.Api.Controllers
                     await _bowlingService.CreateShot(frame.Id, createUpdateFrameDto.Shot3.Value);
                 }
 
-                return CreatedAtAction("Get", new { GameId = gameId, FrameId = frame.Id });
+                return Created($"~/api/Games/{gameId}/Shots/{frame.Id}", new FrameDto
+                {
+                    Id = frame.Id,
+                    FrameNumber = frame.SequenceNumber,
+                    Shot1 = createUpdateFrameDto.Shot1,
+                    Shot2 = createUpdateFrameDto.Shot2,
+                    Shot3 = createUpdateFrameDto.Shot3
+                });
             }
             catch (InvalidOperationException ex)
             {

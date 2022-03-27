@@ -42,7 +42,7 @@ namespace Tuldok.Bowling.Service
                         var plus1idx = i + 1;
 
                         // break if it exceeds array bounds
-                        if (plus1idx > frames.Count)
+                        if (plus1idx >= frames.Count)
                         {
                             continue;
                         }
@@ -58,7 +58,7 @@ namespace Tuldok.Bowling.Service
                             var plus2idx = i + 2;
 
                             // break if it exceeds array bounds
-                            if (plus2idx > frames.Count)
+                            if (plus2idx >= frames.Count)
                             {
                                 continue;
                             }
@@ -72,7 +72,7 @@ namespace Tuldok.Bowling.Service
                     {
                         var plus1idx = i + 1;
 
-                        if (plus1idx > frames.Count)
+                        if (plus1idx >= frames.Count)
                         {
                             continue;
                         }
