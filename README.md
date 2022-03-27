@@ -1,4 +1,4 @@
-!Running the App
+# Running the App
 
 ```
 cd Tuldok.Bowling.Api
