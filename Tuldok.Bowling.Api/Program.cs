@@ -34,6 +34,9 @@ builder.Services.AddScoped<IShotService, ShotService>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
 builder.Services.AddScoped<IBowlingService, BowlingService>();
 
+// Make app Systemd aware in Linux
+builder.Host.UseSystemd();
+
 var app = builder.Build();
 
 // Migrate on startup
@@ -43,12 +46,12 @@ using (var scope = app.Services.CreateScope())
     ctx.Database.Migrate();
 }
 
-    // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
 
