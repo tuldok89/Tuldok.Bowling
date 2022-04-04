@@ -4,6 +4,7 @@ using Tuldok.Bowling.Data.Entities;
 using Tuldok.Bowling.Repo.Data;
 using Tuldok.Bowling.Service;
 using Tuldok.Bowling.Service.Interfaces;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,5 +59,10 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.Run();
